@@ -1,0 +1,11 @@
+aws:
+  access-key:
+  secret-key:
+  region:
+  s3-bucket-name:
+  multipart-min-part-size:
+  endpoint:
+
+spring:
+  main:
+    allow-bean-definition-overriding: true
