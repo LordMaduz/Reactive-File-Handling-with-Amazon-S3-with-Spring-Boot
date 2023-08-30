@@ -1,0 +1,15 @@
+server:
+  port: 9070
+
+
+spring:
+  application:
+    name: s3-trigger-service
+  main:
+    web-application-type: reactive
+  webflux:
+    base-path: /api/s3-trigger-service
+
+logging:
+  level:
+    org.springframework.data.couchbase.core: TRACE
