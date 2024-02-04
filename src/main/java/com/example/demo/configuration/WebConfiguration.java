@@ -12,7 +12,6 @@ import org.springframework.web.reactive.config.WebFluxConfigurer;
 public class WebConfiguration implements WebFluxConfigurer {
     @Override
     public void configureHttpMessageCodecs(ServerCodecConfigurer configurer) {
-        // https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/http/codec/multipart/DefaultPartHttpMessageReader.html#setMaxInMemorySize(int)
         var partReader = new DefaultPartHttpMessageReader();
         partReader.setMaxParts(3);
         // Configure the maximum amount of disk space allowed for file parts
