@@ -1,18 +1,18 @@
 aws:
-  access-key: 123
-  secret-key: 123
-  region: ap-southeast-1
-  s3-bucket-name: camel-ruchira
-  multipart-min-part-size: 100
+  access-key:
+  secret-key:
+  region:
+  s3-bucket-name:
+  multipart-min-part-size:
 
 # Define below Camel S3 Properties when below condition is not available
 ## useProfileCredentialsProvider=true
 camel:
   component:
     aws2-s3:
-      access-key: AKIA4MTWIGYHRXO7KDZQ
-      secret-key: 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
-      region: ap-southeast-1
+      access-key:
+      secret-key:
+      region:
 
 spring:
   main:
