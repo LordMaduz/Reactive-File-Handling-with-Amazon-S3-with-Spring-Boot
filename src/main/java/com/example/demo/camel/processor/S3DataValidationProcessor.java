@@ -10,23 +10,14 @@ import org.springframework.stereotype.Component;
 
 import com.example.demo.camel.model.ExchangeRateRecord;
 
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
 public class S3DataValidationProcessor implements Processor {
 
-    @Setter
-    private boolean skipLines = true;
-
     @Override
     public void process(Exchange exchange) {
-
-        if (skipLines) {
-            skipLines = false;
-            return;
-        }
 
         final String line = exchange.getIn().getBody(String.class);
         final String delimiter = "\\|";

@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
+import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
 import com.example.demo.camel.collection.ExchangeRates;
@@ -17,6 +18,7 @@ import com.example.demo.camel.repo.ExchangeRatesRepository;
 
 import lombok.RequiredArgsConstructor;
 
+@Component
 @RequiredArgsConstructor
 public class ExchangeRateDataProcessor implements Processor {
 
