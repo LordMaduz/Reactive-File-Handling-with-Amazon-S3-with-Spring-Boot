@@ -27,12 +27,10 @@ public class ExchangeDataLoaderRoute extends RouteBuilder {
     private final ExchangeRatesRepository exchangeRatesRepository;
     private final String METHOD_SKIP_HEADERS = "skipHeaders";
 
-
     @Override
     public void configure() throws Exception {
 
-        onException(S3Exception.class)
-            .retryAttemptedLogLevel(LoggingLevel.WARN)
+        onException(S3Exception.class).retryAttemptedLogLevel(LoggingLevel.WARN)
             .maximumRedeliveries(3)
             .redeliveryDelay(1000)
             .handled(true)
@@ -47,8 +45,7 @@ public class ExchangeDataLoaderRoute extends RouteBuilder {
             .end()
             .to("direct:S3FileDownload");
 
-        onException(RuntimeException.class)
-            .retryAttemptedLogLevel(org.apache.camel.LoggingLevel.WARN)
+        onException(RuntimeException.class).retryAttemptedLogLevel(org.apache.camel.LoggingLevel.WARN)
             .maximumRedeliveries(3)
             .redeliveryDelay(1000)
             .handled(true)
@@ -58,11 +55,20 @@ public class ExchangeDataLoaderRoute extends RouteBuilder {
             .routeId("MonthEndSchedulingForExchangeRate")
             .log("Scheduler triggered. Starting S3 file Download...")
             .process(new S3FileNameProcessor(true))
+            .to("direct:GetS3PreSignedURLFromDMPApi");
+
+        from("direct:GetS3PreSignedURLFromDMPApi")
+            .setHeader("Authorization", constant("TOKEN"))
+            .setHeader(Exchange.HTTP_URI, constant("http://localhost:8080/s3-pre-signed-url"))
+            .to("http://localhost:8080/s3-pre-signed-url")
+            .log("Received URL: ${body}") // Log the URL from the response body
+            .removeHeader("Authorization")
+            .setHeader(Exchange.HTTP_URI, simple("${bodyAs(String)}"))
             .to("direct:S3FileDownload");
 
         from("direct:S3FileDownload")
             .routeId("FileDownloadFromS3")
-            .to("aws2-s3://{BUCKET_NAME}?operation=getObject")
+            .to("http://google.com?throwExceptionOnFailure=true")
             .log("File downloaded from S3: ${header.CamelAwsS3Key}")
             .split(body().tokenize(StringUtils.LF), new ExchangeRateAggregationStrategy())
             .streaming() // Ensure memory efficiency for large files
