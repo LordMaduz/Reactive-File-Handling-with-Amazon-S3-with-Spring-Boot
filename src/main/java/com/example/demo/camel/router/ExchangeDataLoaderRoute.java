@@ -10,7 +10,6 @@ import com.example.demo.camel.aggregation.ExchangeRateAggregationStrategy;
 import com.example.demo.camel.processor.ExchangeRateDataProcessor;
 import com.example.demo.camel.processor.S3DataValidationProcessor;
 import com.example.demo.camel.processor.S3FileNameProcessor;
-import com.example.demo.camel.repo.ExchangeRatesRepository;
 import com.example.demo.camel.service.CamelExchangeEnhancer;
 
 import lombok.RequiredArgsConstructor;
@@ -24,8 +23,8 @@ public class ExchangeDataLoaderRoute extends RouteBuilder {
     private final S3DataValidationProcessor s3DataValidationProcessor;
     private final CamelExchangeEnhancer camelExchangeEnhancer;
     private final ExchangeRateDataProcessor exchangeRateDataProcessor;
-    private final ExchangeRatesRepository exchangeRatesRepository;
     private final String METHOD_SKIP_HEADERS = "skipHeaders";
+    private final String URL_PROVIDER = "http://localhost:8080/s3-pre-signed-url";
 
     @Override
     public void configure() throws Exception {
@@ -59,16 +58,19 @@ public class ExchangeDataLoaderRoute extends RouteBuilder {
 
         from("direct:GetS3PreSignedURLFromDMPApi")
             .setHeader("Authorization", constant("TOKEN"))
-            .setHeader(Exchange.HTTP_URI, constant("http://localhost:8080/s3-pre-signed-url"))
-            .to("http://localhost:8080/s3-pre-signed-url")
+            .toD(URL_PROVIDER)
             .log("Received URL: ${body}") // Log the URL from the response body
             .removeHeader("Authorization")
-            .setHeader(Exchange.HTTP_URI, simple("${bodyAs(String)}"))
+            //.setHeader(Exchange.HTTP_URI, simple("${bodyAs(String)}"))
+            .setHeader("pre-signed-url", simple("${bodyAs(String)}"))
+            .log("Received URL: ${header.pre-signed-url}") // Log the URL from the response body
             .to("direct:S3FileDownload");
 
         from("direct:S3FileDownload")
             .routeId("FileDownloadFromS3")
-            .to("http://google.com?throwExceptionOnFailure=true")
+            .setHeader(Exchange.HTTP_METHOD, constant("GET"))
+           // .to("http://google.com?throwExceptionOnFailure=true")
+            .toD("${header.pre-signed-url}?bridgeEndpoint=true&throwExceptionOnFailure=true") // Use Camel HTTP to download the file
             .log("File downloaded from S3: ${header.CamelAwsS3Key}")
             .split(body().tokenize(StringUtils.LF), new ExchangeRateAggregationStrategy())
             .streaming() // Ensure memory efficiency for large files

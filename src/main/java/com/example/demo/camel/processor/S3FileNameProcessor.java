@@ -19,14 +19,15 @@ public class S3FileNameProcessor implements Processor {
         final LocalDate localDate = LocalDate.now();
         final int month = localDate.getMonthValue();
         final int day = localDate.getDayOfMonth();
+        final int year = localDate.getYear();
 
-        final String fileName = "data_%s_%s.csv";
+        final String fileName = "%s-0%s-%s.txt";
         if (primaryDate) {
             exchange.getMessage()
-                .setHeader(AWS2S3Constants.KEY, String.format(fileName, month, day));
+                .setHeader(AWS2S3Constants.KEY, String.format(fileName, year,month, day));
         } else {
             exchange.getMessage()
-                .setHeader(AWS2S3Constants.KEY, String.format(fileName, month, day - 1));
+                .setHeader(AWS2S3Constants.KEY, String.format(fileName, year,month, day - 1));
         }
     }
 }
