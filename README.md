@@ -77,3 +77,32 @@ File Storage Service (Port 8090):
 cd WebClientTestService
 mvn spring-boot:run
 ```
+
+## Multipart Upload Flow
+### How It Works
+
+#### Initiate Multipart Upload: Create upload session with S3
+
+> Stream File Content: Receive file chunks reactively
+> Buffer Chunks: Accumulate data until minimum part size (5MB)
+> Upload Parts: Send buffered chunks to S3 asynchronously
+> Track Parts: Store completed part ETags
+> Complete Upload: Finalize multipart upload with all parts
+
+#### Upload Status Tracking
+```java
+public class UploadStatus {
+    private String uploadId;           // S3 upload session ID
+    private int partCounter;           // Current part number
+    private int buffered;              // Bytes buffered
+    private Map<Integer, CompletedPart> completedParts; // Completed uploads
+    
+    public int getAddedPartCounter() {
+        return ++this.partCounter;
+    }
+    
+    public void addBuffered(int buffered) {
+        this.buffered += buffered;
+    }
+}
+```
