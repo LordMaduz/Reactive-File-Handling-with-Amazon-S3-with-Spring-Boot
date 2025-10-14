@@ -20,6 +20,14 @@ A production-ready reactive microservice for handling file operations with AWS S
 ##  Architecture
 <img width="1077" height="2069" alt="Mermaid Chart - Create complex, visual diagrams with text -2025-10-14-070136" src="https://github.com/user-attachments/assets/e3e23351-2a33-46cf-9b43-4978e6bdbe9a" />
 
+## Tech Stack
+
+| Category | Technologies |
+|----------|-------------|
+| **Core** | Java 21, Spring Boot 3.2.2|
+| **Reactive** | Spring WebFlux, Project Reactor |
+| **AWS** | AWS SDK for Java 2.23.14 (S3 Async Client) |
+| **API Docs** | SpringDoc OpenAPI 3 |
 
 ## Getting Started
 Prerequisites
