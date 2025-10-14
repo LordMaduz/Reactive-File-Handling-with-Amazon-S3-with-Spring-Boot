@@ -236,9 +236,6 @@ public class UploadStatus {
     }
 }
 ```
-Here's the updated ending section with multiple Medium articles:
-Replace the current ending section with this:
-markdown---
 
 ## Learn More
 
