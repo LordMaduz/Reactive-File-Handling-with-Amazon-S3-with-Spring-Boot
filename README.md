@@ -38,3 +38,42 @@ export AWS_ACCESS_KEY_ID=your_access_key
 export AWS_SECRET_ACCESS_KEY=your_secret_key
 export AWS_REGION=us-east-1
 ```
+
+## Installation
+### 1. Clone and Build
+```bash
+git clone <repository-url>
+cd reactive-s3-upload
+mvn clean install
+```
+### 2. Configure Application
+application.yml:
+
+```yaml
+aws:
+  access-key:                    # Optional if using AWS credentials file
+  secret-key:                    # Optional if using AWS credentials file
+  region: us-east-1
+  s3-bucket-name: your-bucket-name
+  multipart-min-part-size: 5242880   # 5MB minimum part size
+  endpoint:                      # Optional: For localstack/minio
+
+```
+
+### 3. Run Main Service
+```bash
+mvn spring-boot:run
+```
+### 4. Run Optional Services (if needed)
+S3 Trigger Service (Port 9070):
+
+```bash
+cd S3 Trigger Service
+mvn spring-boot:run
+```
+
+File Storage Service (Port 8090):
+```bash
+cd WebClientTestService
+mvn spring-boot:run
+```
