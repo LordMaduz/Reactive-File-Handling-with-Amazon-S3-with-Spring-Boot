@@ -117,7 +117,7 @@ Here's the updated ending section with multiple Medium articles:
 Replace the current ending section with this:
 markdown---
 
-## 📖 Learn More
+## Learn More
 
 For detailed step-by-step guides and in-depth explanations, check out these related Medium articles:
 
@@ -129,6 +129,6 @@ For detailed step-by-step guides and in-depth explanations, check out these rela
 | **Asynchronous Streaming to S3** | [Stream data to Amazon S3 asynchronously](https://levelup.gitconnected.com/asynchronous-streaming-of-data-to-amazon-s3-c4f8e066fa9b) |
 | **AWS SDK Best Practises** | [Download Large Files from Amazon S3 without loading them into memory](https://levelup.gitconnected.com/downloading-large-files-from-amazon-s3-without-loading-them-into-the-memory-41dfbf273dc4) |
 
-📝 **More Articles**: Visit my [Medium Profile](https://medium.com/@maduz.ruchira) for more Spring Boot and AWS tutorials.
+**More Articles**: Visit my [Medium Profile](https://medium.com/@maduz.ruchira) for more Spring Boot and AWS tutorials.
 
 ---
