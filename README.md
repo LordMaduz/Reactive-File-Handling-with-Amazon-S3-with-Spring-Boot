@@ -85,6 +85,129 @@ File Storage Service (Port 8090):
 cd WebClientTestService
 mvn spring-boot:run
 ```
+## Key Features
+
+### S3 File Storage Service
+
+Handles reactive S3 operations with multipart upload:
+```java
+@Service
+@RequiredArgsConstructor
+public class S3FileStorageServiceImpl implements S3FileStorageService {
+
+    private final S3AsyncClient s3AsyncClient;
+    private final AwsProperties s3ConfigProperties;
+
+    @Override
+    public Mono uploadObject(FilePart filePart, String path) {
+        String key = path + "/" + filePart.filename();
+        
+        // Create multipart upload
+        CompletableFuture multipartUpload = 
+            s3AsyncClient.createMultipartUpload(
+                CreateMultipartUploadRequest.builder()
+                    .contentType(mediaType.toString())
+                    .key(key)
+                    .bucket(s3ConfigProperties.getS3BucketName())
+                    .build());
+
+        UploadStatus uploadStatus = new UploadStatus(contentType, key);
+
+        return Mono.fromFuture(multipartUpload)
+            .flatMapMany(response -> {
+                uploadStatus.setUploadId(response.uploadId());
+                return filePart.content();
+            })
+            // Buffer until chunk size reached
+            .bufferUntil(dataBuffer -> {
+                uploadStatus.addBuffered(dataBuffer.readableByteCount());
+                if (uploadStatus.getBuffered() >= minPartSize) {
+                    uploadStatus.setBuffered(0);
+                    return true;
+                }
+                return false;
+            })
+            .map(FileUtils::dataBufferToByteBuffer)
+            .flatMap(buffer -> uploadPartObject(uploadStatus, buffer))
+            .onBackpressureBuffer()
+            .reduce(uploadStatus, (status, part) -> {
+                status.getCompletedParts().put(part.partNumber(), part);
+                return status;
+            })
+            .flatMap(this::completeMultipartUpload)
+            .map(response -> new FileResponse(filename, uploadId, location, type, eTag));
+    }
+}
+```
+
+### Buffer Management
+
+Converts DataBuffer to ByteBuffer for S3 upload:
+```java
+public ByteBuffer dataBufferToByteBuffer(List buffers) {
+    int partSize = 0;
+    for(DataBuffer b : buffers) {
+        partSize += b.readableByteCount();
+    }
+
+    ByteBuffer partData = ByteBuffer.allocate(partSize);
+    buffers.forEach(buffer -> partData.put(buffer.toByteBuffer()));
+    
+    partData.rewind();
+    return partData;
+}
+```
+
+### WebFlux Configuration
+
+Configures multipart file handling limits:
+```java
+@Configuration
+@EnableWebFlux
+public class WebConfiguration implements WebFluxConfigurer {
+    
+    @Override
+    public void configureHttpMessageCodecs(ServerCodecConfigurer configurer) {
+        var partReader = new DefaultPartHttpMessageReader();
+        partReader.setMaxParts(3);
+        partReader.setMaxDiskUsagePerPart(30L * 10000L * 1024L); // 307.2 MB
+        
+        MultipartHttpMessageReader multipartReader = 
+            new MultipartHttpMessageReader(partReader);
+        
+        configurer.defaultCodecs().multipartReader(multipartReader);
+        configurer.defaultCodecs().maxInMemorySize(512 * 1024); // 512 KB
+    }
+}
+```
+
+### AWS S3 Configuration
+```java
+@Configuration
+@RequiredArgsConstructor
+public class AwsS3Config {
+
+    private final AwsProperties s3ConfigProperties;
+
+    @Bean
+    public S3AsyncClient s3AsyncClient() {
+        return S3AsyncClient.create();
+    }
+
+    @Bean
+    AwsCredentialsProvider awsCredentialsProvider() {
+        if (StringUtils.isBlank(s3ConfigProperties.getAccessKey())) {
+            return DefaultCredentialsProvider.create();
+        }
+        return () -> AwsBasicCredentials.create(
+            s3ConfigProperties.getAccessKey(),
+            s3ConfigProperties.getSecretKey());
+    }
+}
+```
+
+---
+
 
 ## Multipart Upload Flow
 ### How It Works
